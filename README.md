@@ -170,6 +170,14 @@ Note that we could next add some kind of match - I'm guessing we care about dist
 I'll wait to chat with folks more about next steps, because I've accomplished the goal I set out to do.
 This was immensely satisfying to work on.
 
+#### 6. Cleanup
+
+Don't forget to cleanup your nodes - they cost money!
+
+```bash
+eksctl delete cluster --config-file eksctl-config.yaml 
+```
+
 ## License
 
 HPCIC DevTools is distributed under the terms of the MIT license.
