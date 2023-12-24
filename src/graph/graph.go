@@ -136,7 +136,6 @@ func (t *TopologyGraph) GetUniqueId(name string) *UniqueId {
 	uid, ok := t.seen[name]
 
 	// Nope, create a node for it!
-	// Note from v - I find if I don't return in the checks here, we get the first one
 	if !ok {
 		fmt.Printf("%s is not yet seen, adding with uid %d\n", name, t.counter)
 		uid = UniqueId{Uid: t.counter, Name: name}
@@ -225,7 +224,7 @@ func (t *TopologyGraph) Topology(group string, instance string, saveFile string)
 
 // initFluxionContext, and also save the graph to file if desired.
 // If a saveFile is not provided, we save to temporary file (and clean up)
-// I'm not sure why fluxion requires both the bytes and the path path, it seems redundant.
+// I'm not sure why fluxion requires both the bytes and the filename path, it seems redundant.
 func (t *TopologyGraph) initFluxionContext(saveFile string) error {
 
 	// Serialize the struct to string
@@ -235,7 +234,7 @@ func (t *TopologyGraph) initFluxionContext(saveFile string) error {
 	}
 
 	if saveFile == "" {
-		jsonFile, err := os.CreateTemp("", "aws-topology-*.json") // in Go version older than 1.17 you can use ioutil.TempFile
+		jsonFile, err := os.CreateTemp("", "aws-topology-*.json")
 		if err != nil {
 			return fmt.Errorf("Error creating temporary json file: %s", err)
 		}
@@ -257,7 +256,7 @@ func (t *TopologyGraph) initFluxionContext(saveFile string) error {
 	opts := `{"matcher_policy": "%s", "load_file": "%s", "load_format": "jgf", "match_format": "jgf"}`
 	p := fmt.Sprintf(opts, t.MatchPolicy, saveFile)
 
-	// 4. Then pass in a jobspec... err, ice cream request :)
+	// 4. Then pass in the JGF as a string of bytes
 	err = t.cli.InitContext(string(conf), p)
 	if err != nil {
 		return fmt.Errorf("Error creating context: %s", err)
