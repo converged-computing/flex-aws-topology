@@ -1,0 +1,295 @@
+{
+  "graph": {
+    "directed": true,
+    "metadata": {},
+    "nodes": [
+      {
+        "id": "0",
+        "label": "cluster",
+        "metadata": {
+          "basename": "cluster",
+          "exclusive": false,
+          "id": 0,
+          "name": "cluster",
+          "paths": {
+            "containment": "/cluster"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "cluster",
+          "uniq_id": 0,
+          "unit": ""
+        }
+      },
+      {
+        "id": "1",
+        "label": "i-094ff30f24a9f259c",
+        "metadata": {
+          "availability_zone": "us-east-2b",
+          "basename": "instance",
+          "exclusive": false,
+          "group": "eks-efa-testing",
+          "id": 0,
+          "instance_type": "hpc6a.48xlarge",
+          "name": "instance",
+          "paths": {
+            "containment": "/cluster/node0/node0/node0/instance0"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "instance",
+          "uniq_id": 0,
+          "unit": "",
+          "zone_id": "use2-az2"
+        }
+      },
+      {
+        "id": "2",
+        "label": "2",
+        "metadata": {
+          "basename": "node",
+          "exclusive": false,
+          "id": 2,
+          "name": "node",
+          "paths": {
+            "containment": "/cluster/node2/node3/node4/nodenn-ec17a935b39a06f41"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "node",
+          "uniq_id": 2,
+          "unit": ""
+        }
+      },
+      {
+        "id": "3",
+        "label": "3",
+        "metadata": {
+          "basename": "node",
+          "exclusive": false,
+          "id": 3,
+          "name": "node",
+          "paths": {
+            "containment": "/cluster/node3/node4/nodenn-2c3e90c765109b63f"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "node",
+          "uniq_id": 3,
+          "unit": ""
+        }
+      },
+      {
+        "id": "4",
+        "label": "4",
+        "metadata": {
+          "basename": "node",
+          "exclusive": false,
+          "id": 4,
+          "name": "node",
+          "paths": {
+            "containment": "/cluster/node4/nodenn-653030c96decd1568"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "node",
+          "uniq_id": 4,
+          "unit": ""
+        }
+      },
+      {
+        "id": "5",
+        "label": "i-0155e9d93f373ada6",
+        "metadata": {
+          "availability_zone": "us-east-2b",
+          "basename": "instance",
+          "exclusive": false,
+          "group": "eks-efa-testing",
+          "id": 0,
+          "instance_type": "hpc6a.48xlarge",
+          "name": "instance",
+          "paths": {
+            "containment": "/cluster/node2/node3/node0/instance0"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "instance",
+          "uniq_id": 0,
+          "unit": "",
+          "zone_id": "use2-az2"
+        }
+      },
+      {
+        "id": "6",
+        "label": "6",
+        "metadata": {
+          "basename": "node",
+          "exclusive": false,
+          "id": 6,
+          "name": "node",
+          "paths": {
+            "containment": "/cluster/node6/nodenn-fcaf5d891ec8744ac"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "node",
+          "uniq_id": 6,
+          "unit": ""
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "0",
+        "target": "2",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "2",
+        "target": "0",
+        "metadata": {
+          "name": {
+            "containment": "in"
+          }
+        }
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "3",
+        "target": "2",
+        "metadata": {
+          "name": {
+            "containment": "in"
+          }
+        }
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "4",
+        "target": "3",
+        "metadata": {
+          "name": {
+            "containment": "in"
+          }
+        }
+      },
+      {
+        "source": "4",
+        "target": "1",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "1",
+        "target": "4",
+        "metadata": {
+          "name": {
+            "containment": "in"
+          }
+        }
+      },
+      {
+        "source": "0",
+        "target": "2",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "2",
+        "target": "0",
+        "metadata": {
+          "name": {
+            "containment": "in"
+          }
+        }
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "3",
+        "target": "2",
+        "metadata": {
+          "name": {
+            "containment": "in"
+          }
+        }
+      },
+      {
+        "source": "3",
+        "target": "6",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "6",
+        "target": "3",
+        "metadata": {
+          "name": {
+            "containment": "in"
+          }
+        }
+      },
+      {
+        "source": "6",
+        "target": "5",
+        "metadata": {
+          "name": {
+            "containment": "contains"
+          }
+        }
+      },
+      {
+        "source": "5",
+        "target": "6",
+        "metadata": {
+          "name": {
+            "containment": "in"
+          }
+        }
+      }
+    ]
+  }
+}
