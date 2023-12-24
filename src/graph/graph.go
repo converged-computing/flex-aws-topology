@@ -18,21 +18,54 @@ import (
 )
 
 type TopologyGraph struct {
+
+	// Clients needed for aws and fluxion
+	cli *fluxcli.ReapiClient
+	ec2 *ec2.EC2
+
+	// User preferences
 	MatchPolicy string
 	Region      string
 
 	// These get reset between topology generations
+	graph   *graph.JsonGraph
 	counter int32
-	seen    map[string]int32
 
-	cli *fluxcli.ReapiClient
-	ec2 *ec2.EC2
+	// Lookup for unique id objects
+	seen map[string]UniqueId
+
+	// Lookup of nodes for graph (to create at once)
+	nodes map[string]*graph.Node
 }
 
-// Start counting at 1, the root is 0
+// Reset the topology graph to a "zero" count and no nodes seen or created
 func (t *TopologyGraph) Reset() {
+	// Start counting at 1, the root is 0
 	t.counter = 1
-	t.seen = map[string]int32{}
+	t.seen = map[string]UniqueId{}
+	t.nodes = map[string]*graph.Node{}
+
+	// prepare a graph to load targets into
+	t.graph = graph.NewGraph()
+
+}
+
+// AddNode adds a node to the graph
+func (t *TopologyGraph) AddNode(node *graph.Node) {
+	t.nodes[node.Id] = node
+}
+
+// CreateNodes creates all nodes at once
+func (t *TopologyGraph) CreateNodes() {
+	for _, node := range t.nodes {
+		fmt.Printf("Creating node %s %s\n", node.Id, *node.Label)
+		t.graph.Graph.Nodes = append(t.graph.Graph.Nodes, *node)
+	}
+}
+
+// AddEdge adds a bidirectional edge to the graph
+func (t *TopologyGraph) AddEdge(source string, dest string) {
+	t.graph.Graph.Edges = append(t.graph.Graph.Edges, getBidirectionalEdges(source, dest)...)
 }
 
 // A NewTopologyGraph is associated with a region and match policy
@@ -42,6 +75,12 @@ func NewTopologyGraph(matchPolicy string, region string) *TopologyGraph {
 	if matchPolicy == "" {
 		matchPolicy = "first"
 	}
+
+	// Alert the user to all the chosen parameters
+	// Note that "grug" == "graphml" but probably nobody knows what grug means
+	// We are using JGF for now because XML is slightly evil
+	fmt.Printf(" Match policy: %s\n", matchPolicy)
+	fmt.Println(" Load format: JSON Graph Format (JGF)")
 
 	t := TopologyGraph{MatchPolicy: matchPolicy, Region: region}
 	t.Reset()
@@ -56,49 +95,36 @@ func NewTopologyGraph(matchPolicy string, region string) *TopologyGraph {
 	return &t
 }
 
-// generateTopologyInput generates the parameters for the topology request
-// https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#DescribeInstanceTopologyInput
-func generateTopologyInput(group string, instance string) *ec2.DescribeInstanceTopologyInput {
+// A unique id can hold the id and return string and other derivates of it
+type UniqueId struct {
+	Uid  int32
+	Name string
+}
 
-	groups := []*string{}
-	instances := []*string{}
-	dryRun := false
-
-	// For larger sets we might want NextToken (string) or Filters []*ec2Filter{}
-	input := ec2.DescribeInstanceTopologyInput{
-		DryRun: &dryRun,
-	}
-
-	// Don't add these empty if not provided, likely weird errors
-	if group != "" {
-		groups = append(groups, &group)
-		input.GroupNames = groups
-	}
-	if instance != "" {
-		instances = append(instances, &instance)
-		input.InstanceIds = instances
-	}
-	return &input
+// String converts the int uid to a string
+func (u *UniqueId) String() string {
+	return fmt.Sprintf("%d", u.Uid)
 }
 
 // Get a unique id for a node (instance or network node)
-// We need both int and string, so generate both here
-func (t *TopologyGraph) GetUniqueId(name string) (string, int32) {
+// We need both int and string, so we return a struct
+func (t *TopologyGraph) GetUniqueId(name string) *UniqueId {
 
 	// Have we seen it before?
-	intuid, ok := t.seen[name]
+	uid, ok := t.seen[name]
 
 	// Nope, create a node for it!
+	// Note from v - I find if I don't return in the checks here, we get the first one
 	if !ok {
-		intuid := t.counter
+		fmt.Printf("%s is not yet seen, adding with uid %d\n", name, t.counter)
+		uid = UniqueId{Uid: t.counter, Name: name}
+		t.seen[name] = uid
 		t.counter += 1
-		t.seen[name] = intuid
 	}
-	uid := fmt.Sprintf("%d", intuid)
-	return uid, intuid
+	return &uid
 }
 
-// Init a new FlexGraph from a graphml filename
+// Init a new TopologyGraph from a graphml filename
 // Each instance in the topology result has a listing of network nodes like this:
 
 // NetworkNodes: ["nn-ec17a935b39a06f41","nn-dd9ec3119ca6ea9dc","nn-a59759166e67e7c02"]
@@ -127,67 +153,61 @@ func (t *TopologyGraph) Topology(group string, instance string, saveFile string)
 	// Show the user the found topology
 	fmt.Println(topology)
 
-	// prepare a graph to load targets into
-	g := graph.NewGraph()
-	created := map[string]bool{}
+	// No instances found
+	if len(topology.Instances) == 0 {
+		return fmt.Errorf("No instances were found for this query.")
+	}
 
 	// Create the root node (cluster)
-	root := generateRoot()
-	g.Graph.Nodes = append(g.Graph.Nodes, root)
+	t.AddNode(generateRoot())
 
 	// Create a node for each instance and network nodes
 	for _, instance := range topology.Instances {
 
-		// Generate metadata for the node
-		m := t.getInstanceMetadata(instance)
-		instance_uid, _ := t.GetUniqueId(*instance.InstanceId)
-
-		// Each instance is a new node - we have uniqueness here (I think)
-		node := graph.Node{
-			Label:    instance.InstanceId,
-			Id:       instance_uid,
-			Metadata: m,
-		}
-		g.Graph.Nodes = append(g.Graph.Nodes, node)
+		instance_node := t.NewInstanceNode(instance)
 
 		// Unwrap the network nodes once
 		nodes := utils.UnwrapPointers(instance.NetworkNodes)
 
 		// There are edges between each of the network nodes
-		for i, nnode := range nodes {
+		for i, networkNode := range nodes {
 
 			// Again, get the unique id for the network node
 			// If it's newly created, also create the node
-			uid, _ := t.GetUniqueId(nnode)
-			_, ok := created[uid]
-			if !ok {
-				fmt.Printf("Creating node for %s\n", nnode)
-				// Assemble parents - the unique ids we've already sen
-				parents := t.assembleParentsPath(nodes[i:])
-				node = t.createNetworkNode(nnode, parents)
-				g.Graph.Nodes = append(g.Graph.Nodes, node)
-				created[uid] = true
-			}
+			node := t.NewNetworkNode(networkNode, nodes[i:])
 
 			// If we are at the node 0, make edge to root
 			if i == 0 {
-				g.Graph.Edges = append(g.Graph.Edges, getBidirectionalEdges("0", uid)...)
+				t.AddEdge(rootId, node.Id)
 				continue
 			}
 
 			// If we are > 0, we can add an edge from parent to child and back (bidirectional)
-			parent_uid, _ := t.GetUniqueId(nodes[i-1])
-			g.Graph.Edges = append(g.Graph.Edges, getBidirectionalEdges(parent_uid, uid)...)
+			parent_uid := t.GetUniqueId(nodes[i-1])
+			t.AddEdge(parent_uid.String(), node.Id)
 
 			// If we are at the last entry in the list, make edges between the last one and our instance
 			if i == len(nodes)-1 {
-				g.Graph.Edges = append(g.Graph.Edges, getBidirectionalEdges(uid, instance_uid)...)
+				t.AddEdge(node.Id, instance_node.Id)
 			}
 		}
 	}
 
+	// Create nodes once
+	t.CreateNodes()
+
+	// Init the context for fluxion
+	return t.initFluxionContext(saveFile)
+
+}
+
+// initFluxionContext, and also save the graph to file if desired.
+// If a saveFile is not provided, we save to temporary file (and clean up)
+// I'm not sure why fluxion requires both the bytes and the path path, it seems redundant.
+func (t *TopologyGraph) initFluxionContext(saveFile string) error {
+
 	// Serialize the struct to string
-	conf, err := json.MarshalIndent(g, "", "  ")
+	conf, err := json.MarshalIndent(t.graph, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -195,25 +215,18 @@ func (t *TopologyGraph) Topology(group string, instance string, saveFile string)
 	if saveFile == "" {
 		jsonFile, err := os.CreateTemp("", "aws-topology-*.json") // in Go version older than 1.17 you can use ioutil.TempFile
 		if err != nil {
-			fmt.Printf("Error creating temporary json file: %x", err)
-			return err
+			return fmt.Errorf("Error creating temporary json file: %s", err)
 		}
 		defer jsonFile.Close()
 		defer os.Remove(jsonFile.Name())
 		saveFile = jsonFile.Name()
 	}
 
-	// Write to file!
+	// 1. Write to file!
 	err = os.WriteFile(saveFile, conf, os.ModePerm)
 	if err != nil {
-		fmt.Printf("Error writing json to file: %x", err)
-		return err
+		return fmt.Errorf("Error writing json to file: %s", err)
 	}
-
-	// Alert the user to all the chosen parameters
-	// Note that "grug" == "graphml" but probably nobody knows what grug means
-	fmt.Printf(" Match policy: %s\n", t.MatchPolicy)
-	fmt.Println(" Load format: JSON Graph Format (JGF)")
 
 	// 2. Create the context, the default format is JGF
 	// 3. Remainder of defaults should work out of the box
@@ -225,12 +238,10 @@ func (t *TopologyGraph) Topology(group string, instance string, saveFile string)
 	// 4. Then pass in a jobspec... err, ice cream request :)
 	err = t.cli.InitContext(string(conf), p)
 	if err != nil {
-		fmt.Printf("Error creating context: %s", err)
-		return err
+		return fmt.Errorf("Error creating context: %s", err)
 	}
 	fmt.Printf("\n✨️ Init context complete!\n")
 	return nil
-
 }
 
 /*

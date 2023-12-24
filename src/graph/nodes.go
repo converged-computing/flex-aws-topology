@@ -2,38 +2,51 @@ package graph
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/converged-computing/jsongraph-go/jsongraph/metadata"
 	"github.com/converged-computing/jsongraph-go/jsongraph/v1/graph"
 )
 
-// Create a node for the network node
-func (t *TopologyGraph) createNetworkNode(name string, parents []string) graph.Node {
-	uid, intuid := t.GetUniqueId(name)
-	m := getNetworkNodeMetadata(name, intuid, parents)
+// NewNetworkNode creates a new network node
+// We return a graph node, and a boolean to indicate created or not
+func (t *TopologyGraph) NewNetworkNode(name string, nodes []string) *graph.Node {
 
-	// Each instance is a new node - we have uniqueness here (I think)
-	node := graph.Node{
-		Label:    &uid,
-		Id:       uid,
-		Metadata: m,
+	uid := t.GetUniqueId(name)
+	node, ok := t.nodes[uid.String()]
+
+	// But if we haven't seen it yet, add to graph
+	if !ok {
+		fmt.Printf("Creating network node for %s\n", name)
+
+		// Assemble parents - the unique ids we've already seen
+		parents := t.assembleParentsPath(nodes)
+		m := t.getNetworkNodeMetadata(name, parents)
+
+		node = &graph.Node{
+			Label:    &uid.Name,
+			Id:       uid.String(),
+			Metadata: m,
+		}
+		t.AddNode(node)
 	}
 	return node
 }
 
-// generateRoot generates an abstract root for the graph
-func generateRoot() graph.Node {
+// getInstanceMetadata starts with default metadata and adds on instance specific attributes
+// Parents should be most distant to most recent relative
+// IMPORTANT: uid and intuid must be integers
+func (t *TopologyGraph) getNetworkNodeMetadata(name string, parents []string) metadata.Metadata {
 
-	// Generate metadata for the node
-	m := getDefaultMetadata(clusterType)
-	m.AddElement("name", clusterType)
-	m.AddElement("uniq_id", 0)
-	m.AddElement("id", 0)
-	m.AddElement("paths", map[string]string{"containment": fmt.Sprintf("/%s", clusterType)})
+	uid := t.GetUniqueId(name)
+	m := getDefaultMetadata(nodeType)
 
-	return graph.Node{
-		Label:    &clusterType,
-		Id:       "0",
-		Metadata: m,
-	}
-
+	// The node network path is given to us - we assume no parents is a root
+	// We need to unwrap (remove) pointers so list of strings
+	path := strings.Join(parents, "/")
+	path = fmt.Sprintf("/%s/%s/%s%s", clusterType, path, nodeType, uid)
+	m.AddElement("uniq_id", uid.Uid)
+	m.AddElement("id", uid.Uid)
+	m.AddElement("paths", map[string]string{"containment": path})
+	return m
 }

@@ -21,7 +21,7 @@ func main() {
 	g := graph.NewTopologyGraph(*matchPolicy, *region)
 	err := g.Topology(*group, *instance, *saveFile)
 	if err != nil {
-		fmt.Printf("Oh no! There was a problem generating the topology: %s", err)
+		fmt.Printf("error generating topology: %s\n", err)
 		return
 	}
 	//match, err := g.Match(specFile)

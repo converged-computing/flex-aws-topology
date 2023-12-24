@@ -114,9 +114,12 @@ and refactor to do but I'm pleased with how this is coming along.
 
 ## TODO
 
+- try to get rid of double created and seen
+- make nicer functions for path
 - refactor internal FlexTopology to have cleaner logic
 - try reverting back to using instance ids for identifiers (and not have separate string number lookup)
 - debug `issue initializing resource api client:reapi_cli_initialize: Runtime error: resource_query_t: ERROR: error inserting an edge to outedge metadata map: cluster -> node;`
+- add a check and error message if there aren't any results
 
 ## License
 

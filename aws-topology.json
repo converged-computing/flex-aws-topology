@@ -4,6 +4,48 @@
     "metadata": {},
     "nodes": [
       {
+        "id": "4",
+        "label": "nn-a59759166e67e7c02",
+        "metadata": {
+          "basename": "node",
+          "exclusive": false,
+          "id": 4,
+          "name": "node",
+          "paths": {
+            "containment": "/cluster/node4/node4"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "node",
+          "uniq_id": 4,
+          "unit": ""
+        }
+      },
+      {
+        "id": "5",
+        "label": "i-0fbbd476a798a3f82",
+        "metadata": {
+          "availability_zone": "us-east-2b",
+          "basename": "instance",
+          "exclusive": false,
+          "group": "eks-efa-testing",
+          "id": 5,
+          "instance_type": "hpc6a.48xlarge",
+          "name": "instance",
+          "paths": {
+            "containment": "/cluster/node2/node3/node4/instance5"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "instance",
+          "uniq_id": 5,
+          "unit": "",
+          "zone_id": "use2-az2"
+        }
+      },
+      {
         "id": "0",
         "label": "cluster",
         "metadata": {
@@ -24,37 +66,37 @@
       },
       {
         "id": "1",
-        "label": "i-094ff30f24a9f259c",
+        "label": "i-02125af4faf797399",
         "metadata": {
           "availability_zone": "us-east-2b",
           "basename": "instance",
           "exclusive": false,
           "group": "eks-efa-testing",
-          "id": 0,
+          "id": 1,
           "instance_type": "hpc6a.48xlarge",
           "name": "instance",
           "paths": {
-            "containment": "/cluster/node0/node0/node0/instance0"
+            "containment": "/cluster/node2/node3/node4/instance1"
           },
           "rank": -1,
           "size": 1,
           "status": -1,
           "type": "instance",
-          "uniq_id": 0,
+          "uniq_id": 1,
           "unit": "",
           "zone_id": "use2-az2"
         }
       },
       {
         "id": "2",
-        "label": "2",
+        "label": "nn-ec17a935b39a06f41",
         "metadata": {
           "basename": "node",
           "exclusive": false,
           "id": 2,
           "name": "node",
           "paths": {
-            "containment": "/cluster/node2/node3/node4/nodenn-ec17a935b39a06f41"
+            "containment": "/cluster/node2/node3/node4/node2"
           },
           "rank": -1,
           "size": 1,
@@ -66,81 +108,20 @@
       },
       {
         "id": "3",
-        "label": "3",
+        "label": "nn-dd9ec3119ca6ea9dc",
         "metadata": {
           "basename": "node",
           "exclusive": false,
           "id": 3,
           "name": "node",
           "paths": {
-            "containment": "/cluster/node3/node4/nodenn-2c3e90c765109b63f"
+            "containment": "/cluster/node3/node4/node3"
           },
           "rank": -1,
           "size": 1,
           "status": -1,
           "type": "node",
           "uniq_id": 3,
-          "unit": ""
-        }
-      },
-      {
-        "id": "4",
-        "label": "4",
-        "metadata": {
-          "basename": "node",
-          "exclusive": false,
-          "id": 4,
-          "name": "node",
-          "paths": {
-            "containment": "/cluster/node4/nodenn-653030c96decd1568"
-          },
-          "rank": -1,
-          "size": 1,
-          "status": -1,
-          "type": "node",
-          "uniq_id": 4,
-          "unit": ""
-        }
-      },
-      {
-        "id": "5",
-        "label": "i-0155e9d93f373ada6",
-        "metadata": {
-          "availability_zone": "us-east-2b",
-          "basename": "instance",
-          "exclusive": false,
-          "group": "eks-efa-testing",
-          "id": 0,
-          "instance_type": "hpc6a.48xlarge",
-          "name": "instance",
-          "paths": {
-            "containment": "/cluster/node2/node3/node0/instance0"
-          },
-          "rank": -1,
-          "size": 1,
-          "status": -1,
-          "type": "instance",
-          "uniq_id": 0,
-          "unit": "",
-          "zone_id": "use2-az2"
-        }
-      },
-      {
-        "id": "6",
-        "label": "6",
-        "metadata": {
-          "basename": "node",
-          "exclusive": false,
-          "id": 6,
-          "name": "node",
-          "paths": {
-            "containment": "/cluster/node6/nodenn-fcaf5d891ec8744ac"
-          },
-          "rank": -1,
-          "size": 1,
-          "status": -1,
-          "type": "node",
-          "uniq_id": 6,
           "unit": ""
         }
       }
@@ -256,7 +237,7 @@
       },
       {
         "source": "3",
-        "target": "6",
+        "target": "4",
         "metadata": {
           "name": {
             "containment": "contains"
@@ -264,7 +245,7 @@
         }
       },
       {
-        "source": "6",
+        "source": "4",
         "target": "3",
         "metadata": {
           "name": {
@@ -273,7 +254,7 @@
         }
       },
       {
-        "source": "6",
+        "source": "4",
         "target": "5",
         "metadata": {
           "name": {
@@ -283,7 +264,7 @@
       },
       {
         "source": "5",
-        "target": "6",
+        "target": "4",
         "metadata": {
           "name": {
             "containment": "in"
