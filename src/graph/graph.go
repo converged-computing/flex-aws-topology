@@ -3,6 +3,8 @@ package graph
 import (
 	"encoding/json"
 	"os"
+	"sort"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -34,8 +36,9 @@ type TopologyGraph struct {
 	// Lookup for unique id objects
 	seen map[string]UniqueId
 
-	// Lookup of nodes for graph (to create at once)
+	// Lookup of nodes and edges for graph (to create at once)
 	nodes map[string]*graph.Node
+	edges map[string]*graph.Edge
 }
 
 // Reset the topology graph to a "zero" count and no nodes seen or created
@@ -44,6 +47,7 @@ func (t *TopologyGraph) Reset() {
 	t.counter = 1
 	t.seen = map[string]UniqueId{}
 	t.nodes = map[string]*graph.Node{}
+	t.edges = map[string]*graph.Edge{}
 
 	// prepare a graph to load targets into
 	t.graph = graph.NewGraph()
@@ -63,9 +67,27 @@ func (t *TopologyGraph) CreateNodes() {
 	}
 }
 
+// CreateEdges creates all edges at once
+func (t *TopologyGraph) CreateEdges() {
+	for _, edge := range t.edges {
+		fmt.Printf("Creating edge (%s contains->%s) (%s in-> %s) \n", edge.Source, edge.Target, edge.Target, edge.Source)
+		t.graph.Graph.Edges = append(t.graph.Graph.Edges, getBidirectionalEdges(edge.Source, edge.Target)...)
+	}
+}
+
 // AddEdge adds a bidirectional edge to the graph
 func (t *TopologyGraph) AddEdge(source string, dest string) {
-	t.graph.Graph.Edges = append(t.graph.Graph.Edges, getBidirectionalEdges(source, dest)...)
+
+	// Since we create bi-directional, always sort
+	ids := []string{source, dest}
+	sort.Strings(ids)
+	key := strings.Join(ids, "-")
+
+	_, ok := t.edges[key]
+	if !ok {
+		t.edges[key] = &graph.Edge{Source: source, Target: dest}
+	}
+
 }
 
 // A NewTopologyGraph is associated with a region and match policy
@@ -172,9 +194,8 @@ func (t *TopologyGraph) Topology(group string, instance string, saveFile string)
 		// There are edges between each of the network nodes
 		for i, networkNode := range nodes {
 
-			// Again, get the unique id for the network node
-			// If it's newly created, also create the node
-			node := t.NewNetworkNode(networkNode, nodes[i:])
+			// Create the network node, providing parents up to it
+			node := t.NewNetworkNode(networkNode, nodes, i)
 
 			// If we are at the node 0, make edge to root
 			if i == 0 {
@@ -193,8 +214,9 @@ func (t *TopologyGraph) Topology(group string, instance string, saveFile string)
 		}
 	}
 
-	// Create nodes once
+	// Create nodes and edges once
 	t.CreateNodes()
+	t.CreateEdges()
 
 	// Init the context for fluxion
 	return t.initFluxionContext(saveFile)
@@ -245,13 +267,14 @@ func (t *TopologyGraph) initFluxionContext(saveFile string) error {
 }
 
 /*
-// Order is akin to doing a Satisfies, but right now it's a MatchAllocate
-// The result of an order is a traversal of the graph that could satisfy the ice cream request
-func (f *TopologyGraph) Match(specFile string) (instance.IceCreamRequest, error) {
-	fmt.Printf("   🍦️ Request: %s\n", specFile)
+// This function isn't written yet because I don't know what a topology request is
+// I think likely we want something more like closeness (distance) in the graph
+// as opposed to resources with some attributes.
+func (f *TopologyGraph) Match(specFile string) (instance.TopologymRequest, error) {
+	fmt.Printf("  💻️  Request: %s\n", specFile)
 
 	// Prepare the ice cream request!
-	request := instance.IceCreamRequest{}
+	request := instance.TopologyRequest{}
 
 	spec, err := os.ReadFile(specFile)
 	if err != nil {
@@ -259,15 +282,15 @@ func (f *TopologyGraph) Match(specFile string) (instance.IceCreamRequest, error)
 	}
 
 	// TODO this could be f.cli.Satisfies
-	// Note that number originally was a jobid (it's now a number for the ice cream in the shop)
+	// Note that number originally was a jobid (it's now some number for the request)
 	// Note that recipe was originally "allocated"
-	_, recipe, _, _, number, err := f.cli.MatchAllocate(false, string(spec))
+	_, match, _, _, number, err := f.cli.MatchAllocate(false, string(spec))
 	if err != nil {
 		return request, err
 	}
 
 	// Populate the ice cream request for the customer
-	request.Recipe = recipe
+	request.Spec = match
 	request.Number = number
 	return request, nil
 }

@@ -4,57 +4,15 @@
     "metadata": {},
     "nodes": [
       {
-        "id": "4",
-        "label": "nn-a59759166e67e7c02",
-        "metadata": {
-          "basename": "node",
-          "exclusive": false,
-          "id": 4,
-          "name": "node",
-          "paths": {
-            "containment": "/cluster/node4/node4"
-          },
-          "rank": -1,
-          "size": 1,
-          "status": -1,
-          "type": "node",
-          "uniq_id": 4,
-          "unit": ""
-        }
-      },
-      {
-        "id": "5",
-        "label": "i-0fbbd476a798a3f82",
-        "metadata": {
-          "availability_zone": "us-east-2b",
-          "basename": "instance",
-          "exclusive": false,
-          "group": "eks-efa-testing",
-          "id": 5,
-          "instance_type": "hpc6a.48xlarge",
-          "name": "instance",
-          "paths": {
-            "containment": "/cluster/node2/node3/node4/instance5"
-          },
-          "rank": -1,
-          "size": 1,
-          "status": -1,
-          "type": "instance",
-          "uniq_id": 5,
-          "unit": "",
-          "zone_id": "use2-az2"
-        }
-      },
-      {
         "id": "0",
         "label": "cluster",
         "metadata": {
           "basename": "cluster",
           "exclusive": false,
           "id": 0,
-          "name": "cluster",
+          "name": "cluster0",
           "paths": {
-            "containment": "/cluster"
+            "containment": "/cluster0"
           },
           "rank": -1,
           "size": 1,
@@ -74,9 +32,9 @@
           "group": "eks-efa-testing",
           "id": 1,
           "instance_type": "hpc6a.48xlarge",
-          "name": "instance",
+          "name": "instance1",
           "paths": {
-            "containment": "/cluster/node2/node3/node4/instance1"
+            "containment": "/cluster0/node2/node3/node4/instance1"
           },
           "rank": -1,
           "size": 1,
@@ -94,9 +52,9 @@
           "basename": "node",
           "exclusive": false,
           "id": 2,
-          "name": "node",
+          "name": "node2",
           "paths": {
-            "containment": "/cluster/node2/node3/node4/node2"
+            "containment": "/cluster0/node2"
           },
           "rank": -1,
           "size": 1,
@@ -113,9 +71,9 @@
           "basename": "node",
           "exclusive": false,
           "id": 3,
-          "name": "node",
+          "name": "node3",
           "paths": {
-            "containment": "/cluster/node3/node4/node3"
+            "containment": "/cluster0/node2/node3"
           },
           "rank": -1,
           "size": 1,
@@ -123,6 +81,48 @@
           "type": "node",
           "uniq_id": 3,
           "unit": ""
+        }
+      },
+      {
+        "id": "4",
+        "label": "nn-a59759166e67e7c02",
+        "metadata": {
+          "basename": "node",
+          "exclusive": false,
+          "id": 4,
+          "name": "node4",
+          "paths": {
+            "containment": "/cluster0/node2/node3/node4"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "node",
+          "uniq_id": 4,
+          "unit": ""
+        }
+      },
+      {
+        "id": "5",
+        "label": "i-0fbbd476a798a3f82",
+        "metadata": {
+          "availability_zone": "us-east-2b",
+          "basename": "instance",
+          "exclusive": false,
+          "group": "eks-efa-testing",
+          "id": 5,
+          "instance_type": "hpc6a.48xlarge",
+          "name": "instance5",
+          "paths": {
+            "containment": "/cluster0/node2/node3/node4/instance5"
+          },
+          "rank": -1,
+          "size": 1,
+          "status": -1,
+          "type": "instance",
+          "uniq_id": 5,
+          "unit": "",
+          "zone_id": "use2-az2"
         }
       }
     ],
@@ -193,60 +193,6 @@
       {
         "source": "1",
         "target": "4",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      },
-      {
-        "source": "0",
-        "target": "2",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "2",
-        "target": "0",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      },
-      {
-        "source": "2",
-        "target": "3",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "3",
-        "target": "2",
-        "metadata": {
-          "name": {
-            "containment": "in"
-          }
-        }
-      },
-      {
-        "source": "3",
-        "target": "4",
-        "metadata": {
-          "name": {
-            "containment": "contains"
-          }
-        }
-      },
-      {
-        "source": "4",
-        "target": "3",
         "metadata": {
           "name": {
             "containment": "in"

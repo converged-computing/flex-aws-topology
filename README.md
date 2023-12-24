@@ -107,19 +107,68 @@ This will generate the JGF to a non-temporary file for you to debug:
 ./bin/aws-topology --group eks-efa-testing --region us-east-2 --file ./aws-topology.json
 ```
 
-I'm currently at the point where we have a JGF, and I'm debugging what fluxion wants! I have quite a bit of cleanup
-and refactor to do but I'm pleased with how this is coming along.
+This shows simple output and you can also view the [generated topology](aws-topology.json):
 
-**more coming soon**
+<details>
 
-## TODO
+<summary> Output for JGF </summary>
 
-- try to get rid of double created and seen
-- make nicer functions for path
-- refactor internal FlexTopology to have cleaner logic
-- try reverting back to using instance ids for identifiers (and not have separate string number lookup)
-- debug `issue initializing resource api client:reapi_cli_initialize: Runtime error: resource_query_t: ERROR: error inserting an edge to outedge metadata map: cluster -> node;`
-- add a check and error message if there aren't any results
+```console
+This is the flex aws topology prototype
+ Match policy: first
+ Load format: JSON Graph Format (JGF)
+Created flex resource graph &{%!s(*fluxcli.ReapiCtx=&{})}
+Topology Query Parameters:
+{
+  DryRun: false,
+  GroupNames: ["eks-efa-testing"]
+}
+{
+  Instances: [{
+      AvailabilityZone: "us-east-2b",
+      GroupName: "eks-efa-testing",
+      InstanceId: "i-02125af4faf797399",
+      InstanceType: "hpc6a.48xlarge",
+      NetworkNodes: ["nn-ec17a935b39a06f41","nn-dd9ec3119ca6ea9dc","nn-a59759166e67e7c02"],
+      ZoneId: "use2-az2"
+    },{
+      AvailabilityZone: "us-east-2b",
+      GroupName: "eks-efa-testing",
+      InstanceId: "i-0fbbd476a798a3f82",
+      InstanceType: "hpc6a.48xlarge",
+      NetworkNodes: ["nn-ec17a935b39a06f41","nn-dd9ec3119ca6ea9dc","nn-a59759166e67e7c02"],
+      ZoneId: "use2-az2"
+    }],
+  NextToken: "..."
+}
+i-02125af4faf797399 is not yet seen, adding with uid 1
+nn-ec17a935b39a06f41 is not yet seen, adding with uid 2
+nn-dd9ec3119ca6ea9dc is not yet seen, adding with uid 3
+nn-a59759166e67e7c02 is not yet seen, adding with uid 4
+Creating instance node for i-02125af4faf797399
+Creating network node for nn-ec17a935b39a06f41
+Creating network node for nn-dd9ec3119ca6ea9dc
+Creating network node for nn-a59759166e67e7c02
+i-0fbbd476a798a3f82 is not yet seen, adding with uid 5
+Creating instance node for i-0fbbd476a798a3f82
+Creating node 0 cluster
+Creating node 1 i-02125af4faf797399
+Creating node 2 nn-ec17a935b39a06f41
+Creating node 3 nn-dd9ec3119ca6ea9dc
+Creating node 4 nn-a59759166e67e7c02
+Creating node 5 i-0fbbd476a798a3f82
+Creating edge (4 contains->5) (5 in-> 4) 
+Creating edge (0 contains->2) (2 in-> 0) 
+Creating edge (2 contains->3) (3 in-> 2) 
+Creating edge (3 contains->4) (4 in-> 3) 
+Creating edge (4 contains->1) (1 in-> 4) 
+```
+
+</details>
+
+Note that we could next add some kind of match - I'm guessing we care about distances in the graph more than attributes.
+I'll wait to chat with folks more about next steps, because I've accomplished the goal I set out to do.
+This was immensely satisfying to work on.
 
 ## License
 

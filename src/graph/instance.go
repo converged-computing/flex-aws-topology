@@ -2,7 +2,6 @@ package graph
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/converged-computing/flex-aws-topology/src/utils"
@@ -40,19 +39,15 @@ func (t *TopologyGraph) NewInstanceNode(instance *ec2.InstanceTopology) *graph.N
 // getInstanceMetadata starts with default metadata and adds on instance specific attributes
 func (t *TopologyGraph) getInstanceMetadata(instance *ec2.InstanceTopology, uid *UniqueId) metadata.Metadata {
 
-	m := getDefaultMetadata(instanceType)
+	m := getDefaultMetadata(instanceType, uid)
 
 	// The node network path is given to us
 	// We need to unwrap (remove) pointers so list of strings
 	nodes := utils.UnwrapPointers(instance.NetworkNodes)
-	parents := t.assembleParentsPath(nodes)
+	path := t.assembleParentsPath(nodes)
+	path = fmt.Sprintf("/%s/%s/%s%d", clusterPath, path, instanceType, uid.Uid)
 
-	path := strings.Join(parents, "/")
-	path = fmt.Sprintf("/%s/%s/%s%d", clusterType, path, instanceType, uid.Uid)
-
-	m.AddElement("name", instanceType)
-	m.AddElement("uniq_id", uid.Uid)
-	m.AddElement("id", uid.Uid)
+	// Note from V: the name has to match the basename or it goes wonky
 	m.AddElement("availability_zone", instance.AvailabilityZone)
 	m.AddElement("instance_type", instance.InstanceType)
 	m.AddElement("paths", map[string]string{"containment": path})

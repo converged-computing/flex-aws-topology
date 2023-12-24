@@ -22,11 +22,12 @@ func main() {
 	err := g.Topology(*group, *instance, *saveFile)
 	if err != nil {
 		fmt.Printf("error generating topology: %s\n", err)
-		return
 	}
+
+	// TODO decide what kind of match we want to do?
 	//match, err := g.Match(specFile)
 	//if err != nil {
-	//	fmt.Printf("Oh no! There was a problem with your machine matching: %x", err)
+	//	fmt.Printf("There was a problem with your request: %x", err)
 	//	return
 	//}
 	//match.Show()
